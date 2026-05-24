@@ -1,6 +1,6 @@
 #!/bin/bash
 #Author:MrR736
-#Created:2-28-2025
+#Created:5-23-2026
 #HomePage: https://github.com/MrR736
 
 HomePage="https://github.com/MrR736"
@@ -10,6 +10,9 @@ SCRIPT_TEXT="Ventoy Manager Script"
 SCRIPT_VERSION="1.0"
 
 SCRIPT_BY="MrR736"
+
+USR_PATH="/usr/local"
+SHARE_PATH="$USR_PATH/share"
 
 for cmd in curl for readlink dirname if awk sed grep update-desktop-database ln rm update-mime-database echo mkdir tar; do
     if ! command -v "$cmd" &> /dev/null; then
@@ -51,59 +54,61 @@ Written by ${SCRIPT_BY}"
 }
 
 DOC_ventoy() {
-rm -rf /usr/local/share/doc/ventoy
+rm -rf $SHARE_PATH/doc/ventoy
 
-mkdir -p "/usr/local/share/doc/ventoy" &> /dev/null
+mkdir -p "$SHARE_PATH/doc/ventoy" &> /dev/null
 
-mv /usr/local/lib/ventoy/README /usr/local/share/doc/ventoy/
+mv $USR_PATH/lib/ventoy/README $SHARE_PATH/doc/ventoy/
 
-curl -sL "https://github.com/ventoy/Ventoy/raw/refs/heads/master/COPYING" -o /usr/local/share/doc/ventoy/copyright
+curl -sL "https://github.com/ventoy/Ventoy/raw/refs/heads/master/COPYING" -o $SHARE_PATH/doc/ventoy/copyright
 
-curl -sL "https://github.com/ventoy/Ventoy/raw/refs/heads/master/DOC/LoopExBuild.txt" -o /usr/local/share/doc/ventoy/LoopExBuild
+curl -sL "https://github.com/ventoy/Ventoy/raw/refs/heads/master/DOC/LoopExBuild.txt" -o $SHARE_PATH/doc/ventoy/LoopExBuild
 
-curl -sL "https://github.com/ventoy/Ventoy/raw/refs/heads/master/DOC/BuildVentoyFromSource.txt" -o /usr/local/share/doc/ventoy/BuildVentoyFromSource
+curl -sL "https://github.com/ventoy/Ventoy/raw/refs/heads/master/DOC/BuildVentoyFromSource.txt" -o $SHARE_PATH/doc/ventoy/BuildVentoyFromSource
 }
 
 DASKTOP_VENTOY() {
+mkdir -p "$SHARE_PATH/applications" &> /dev/null
+
 if [ "$(uname -m)" == "x86_64" ]; then
-    cat > "/usr/local/share/applications/ventoy.desktop" << EOF
+    cat > "$SHARE_PATH/applications/ventoy.desktop" << EOF
 [Desktop Entry]
 Name=Ventoy
 Type=Application
 Categories=QT;GTK;Utility;System;
 Terminal=false
 Icon=ventoy
-Exec=/usr/local/lib/ventoy/VentoyGUI.x86_64
+Exec=$USR_PATH/lib/ventoy/VentoyGUI.x86_64
 EOF
 elif [[ "$(uname -m)" =~ ^i[3-6]86$ ]]; then
-    cat > "/usr/local/share/applications/ventoy.desktop" << EOF
+    cat > "$SHARE_PATH/applications/ventoy.desktop" << EOF
 [Desktop Entry]
 Name=Ventoy
 Type=Application
 Categories=QT;GTK;Utility;System;
 Terminal=false
 Icon=ventoy
-Exec=/usr/local/lib/ventoy/VentoyGUI.i386
+Exec=$USR_PATH/lib/ventoy/VentoyGUI.i386
 EOF
 elif [ "$(uname -m)" == "aarch64" ]; then
-    cat > "/usr/local/share/applications/ventoy.desktop" << EOF
+    cat > "$SHARE_PATH/applications/ventoy.desktop" << EOF
 [Desktop Entry]
 Name=Ventoy
 Type=Application
 Categories=QT;GTK;Utility;System;
 Terminal=false
 Icon=ventoy
-Exec=/usr/local/lib/ventoy/VentoyGUI.aarch64
+Exec=$USR_PATH/lib/ventoy/VentoyGUI.aarch64
 EOF
 elif [ "$(uname -m)" == "mips64el" ]; then
-    cat > "/usr/local/share/applications/ventoy.desktop" << EOF
+    cat > "$SHARE_PATH/applications/ventoy.desktop" << EOF
 [Desktop Entry]
 Name=Ventoy
 Type=Application
 Categories=QT;GTK;Utility;System;
 Terminal=false
 Icon=ventoy
-Exec=/usr/local/lib/ventoy/VentoyGUI.mips64el
+Exec=$USR_PATH/lib/ventoy/VentoyGUI.mips64el
 EOF
 else
     echo -e "\e[31mE: Unknown Type of Arch: $(uname -m)\e[0m" >&2
@@ -112,63 +117,63 @@ fi
 }
 
 SETUP_ventoy() {
-tar -xJf "$DIR/ventoy.tar.xz" -C / &> /dev/null
+mkdir -p "$USR_PATH/lib/ventoy" "$SHARE_PATH/icons/hicolor" &> /dev/null
 
-mkdir -p "/usr/local/lib/ventoy" &> /dev/null
+tar -xJf "$DIR/ventoy.tar.xz" -C "$SHARE_PATH/icons/hicolor" &> /dev/null
 
 URL=$(curl -s https://api.github.com/repos/ventoy/Ventoy/releases/latest | grep '"browser_download_url":' | grep '.*\.tar.gz' | grep "linux" | cut -d '"' -f 4)
 
 curl -sL "$URL" -o "/tmp/ventoy.tar.gz"
 
 tar -xf "/tmp/ventoy.tar.gz" -C $TEMP_DIR &> /dev/null
-cp -r $TEMP_DIR/*/* /usr/local/lib/ventoy/
+cp -r $TEMP_DIR/*/* $USR_PATH/lib/ventoy/
 
-rm -rf "$TEMP_DIR" "/tmp/ventoy.tar.gz" "/usr/local/bin/CreatePersistentImg.sh" "/usr/local/bin/ExtendPersistentImg.sh" "/usr/local/bin/VentoyPlugson.sh" "/usr/local/bin/VentoyWeb.sh" "/usr/local/bin/VentoyVlnk.sh" "/usr/local/bin/Ventoy2Disk.sh" "/usr/local/share/applications/ventoy.desktop"
+rm -rf "$TEMP_DIR" "/tmp/ventoy.tar.gz" "$USR_PATH/bin/CreatePersistentImg.sh" "$USR_PATH/bin/ExtendPersistentImg.sh" "$USR_PATH/bin/VentoyPlugson.sh" "$USR_PATH/bin/VentoyWeb.sh" "$USR_PATH/bin/VentoyVlnk.sh" "$USR_PATH/bin/Ventoy2Disk.sh" "$SHARE_PATH/applications/ventoy.desktop"
 
 DASKTOP_VENTOY
 
-for files in /usr/local/lib/ventoy/CreatePersistentImg.sh /usr/local/lib/ventoy/ExtendPersistentImg.sh /usr/local/lib/ventoy/VentoyPlugson.sh /usr/local/lib/ventoy/VentoyWeb.sh /usr/local/lib/ventoy/VentoyVlnk.sh /usr/local/lib/ventoy/Ventoy2Disk.sh; do
-    sed -i '2s|.*|cd /usr/local/lib/ventoy|' $files
+for files in $USR_PATH/lib/ventoy/CreatePersistentImg.sh $USR_PATH/lib/ventoy/ExtendPersistentImg.sh $USR_PATH/lib/ventoy/VentoyPlugson.sh $USR_PATH/lib/ventoy/VentoyWeb.sh $USR_PATH/lib/ventoy/VentoyVlnk.sh $USR_PATH/lib/ventoy/Ventoy2Disk.sh; do
+    sed -i '2s|.*|cd $USR_PATH/lib/ventoy|' $files
 done
 
-chown -R root:root /usr/local/lib/ventoy
-chmod -R 755 /usr/local/lib/ventoy
+chown -R root:root $USR_PATH/lib/ventoy
+chmod -R 755 $USR_PATH/lib/ventoy
 
-ln -s "/usr/local/lib/ventoy/CreatePersistentImg.sh" "/usr/local/bin/CreatePersistentImg.sh"
+ln -s "$USR_PATH/lib/ventoy/CreatePersistentImg.sh" "$USR_PATH/bin/CreatePersistentImg.sh"
 
-ln -s "/usr/local/lib/ventoy/ExtendPersistentImg.sh" "/usr/local/bin/ExtendPersistentImg.sh"
+ln -s "$USR_PATH/lib/ventoy/ExtendPersistentImg.sh" "$USR_PATH/bin/ExtendPersistentImg.sh"
 
-ln -s "/usr/local/lib/ventoy/VentoyPlugson.sh" "/usr/local/bin/VentoyPlugson.sh"
+ln -s "$USR_PATH/lib/ventoy/VentoyPlugson.sh" "$USR_PATH/bin/VentoyPlugson.sh"
 
-ln -s "/usr/local/lib/ventoy/VentoyWeb.sh" "/usr/local/bin/VentoyWeb.sh"
+ln -s "$USR_PATH/lib/ventoy/VentoyWeb.sh" "$USR_PATH/bin/VentoyWeb.sh"
 
-ln -s "/usr/local/lib/ventoy/VentoyVlnk.sh" "/usr/local/bin/VentoyVlnk.sh"
+ln -s "$USR_PATH/lib/ventoy/VentoyVlnk.sh" "$USR_PATH/bin/VentoyVlnk.sh"
 
-ln -s "/usr/local/lib/ventoy/Ventoy2Disk.sh" "/usr/local/bin/Ventoy2Disk.sh"
+ln -s "$USR_PATH/lib/ventoy/Ventoy2Disk.sh" "$USR_PATH/bin/Ventoy2Disk.sh"
 
-ln -s "/usr/local/lib/ventoy/ventoy/version" "/usr/local/lib/ventoy/version"
+ln -s "$USR_PATH/lib/ventoy/ventoy/version" "$USR_PATH/lib/ventoy/version"
 
-chmod 644 "/usr/local/share/applications/ventoy.desktop"
+chmod 644 "$SHARE_PATH/applications/ventoy.desktop"
 
 update-desktop-database
 
 DOC_ventoy
 
-chown -R root:root /usr/local/lib/ventoy
-chmod -R 755 /usr/local/lib/ventoy
+chown -R root:root $USR_PATH/lib/ventoy
+chmod -R 755 $USR_PATH/lib/ventoy
 }
 
 ventoy_remover() {
 CHECK_ROOT
 
-if [[ -f "/usr/local/lib/ventoy/VentoyGUI.x86_64" && -f "/usr/local/lib/ventoy/VentoyGUI.i386 && -f /usr/local/lib/ventoy/VentoyGUI.aarch64" && -f "/usr/local/lib/ventoy/VentoyGUI.mips64el" ]]; then
+if [[ -f "$USR_PATH/lib/ventoy/VentoyGUI.x86_64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.i386 && -f $USR_PATH/lib/ventoy/VentoyGUI.aarch64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.mips64el" ]]; then
     echo "Ventoy is Not Installed, So Cancelling Removal." >&2
     exit 1
 else
     echo "Remove Ventoy..."
-    rm -rf "/usr/local/share/applications/ventoy.desktop" "/usr/local/lib/ventoy" "/usr/local/bin/CreatePersistentImg.sh" "/usr/local/bin/ExtendPersistentImg.sh" "/usr/local/bin/VentoyPlugson.sh" "/usr/local/bin/VentoyWeb.sh" "/usr/local/bin/VentoyVlnk.sh" "/usr/local/bin/Ventoy2Disk.sh" "/usr/local/share/doc/ventoy"
+    rm -rf "$SHARE_PATH/applications/ventoy.desktop" "$USR_PATH/lib/ventoy" "$USR_PATH/bin/CreatePersistentImg.sh" "$USR_PATH/bin/ExtendPersistentImg.sh" "$USR_PATH/bin/VentoyPlugson.sh" "$USR_PATH/bin/VentoyWeb.sh" "$USR_PATH/bin/VentoyVlnk.sh" "$USR_PATH/bin/Ventoy2Disk.sh" "$SHARE_PATH/doc/ventoy"
 
-    for file in $(find /usr/local/share/icons/hicolor/* -name "ventoy.*"); do
+    for file in $(find $SHARE_PATH/icons/hicolor/* -name "ventoy.*"); do
         rm -rf "$file"
     done
 
@@ -179,12 +184,12 @@ fi
 }
 
 CHECK_VERSION() {
-    if [ ! -f "/usr/local/lib/ventoy/version" ]; then
+    if [ ! -f "$USR_PATH/lib/ventoy/version" ]; then
         echo "Ventoy is Not Installed, So Cancelling Check Version." >&2
         exit 1
     fi
 
-    VENTOY_VERSION=$(cat /usr/local/lib/ventoy/version)
+    VENTOY_VERSION=$(cat $USR_PATH/lib/ventoy/version)
     VENTOY_LATEST_VERSION=$(curl -s https://api.github.com/repos/ventoy/Ventoy/releases/latest | grep tag_name | awk -F '"' '{print $4}' | sed 's/-stable//;s/\./,/g' | sed 's/\,/./g' | sed 's/v//g')
 
     echo "Version Of Ventoy: ${VENTOY_VERSION}
@@ -194,12 +199,12 @@ Latest Version Of Ventoy: ${VENTOY_LATEST_VERSION}"
 ventoy_upgrader() {
 CHECK_ROOT
 
-if [[ -f "/usr/local/lib/ventoy/VentoyGUI.x86_64" && -f "/usr/local/lib/ventoy/VentoyGUI.i386 && -f /usr/local/lib/ventoy/VentoyGUI.aarch64" && -f "/usr/local/lib/ventoy/VentoyGUI.mips64el" ]]; then
+if [[ -f "$USR_PATH/lib/ventoy/VentoyGUI.x86_64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.i386 && -f $USR_PATH/lib/ventoy/VentoyGUI.aarch64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.mips64el" ]]; then
     echo "Ventoy is Not Installed, So Cancelling Upgrade." >&2
     exit 1
 fi
 
-VENTOY_VERSION=$(cat /usr/local/lib/ventoy/version)
+VENTOY_VERSION=$(cat $USR_PATH/lib/ventoy/version)
 VENTOY_LATEST_VERSION=$(curl -s https://api.github.com/repos/ventoy/Ventoy/releases/latest | grep tag_name | awk -F '"' '{print $4}' | sed 's/-stable//;s/\./,/g' | sed 's/\,/./g' | sed 's/v//g')
 
 if [[ "$VENTOY_LATEST_VERSION" > "$VENTOY_VERSION" ]]; then
@@ -223,7 +228,7 @@ CHECK_ROOT
 
 echo "Install Ventoy..."
 
-if [[ -f "/usr/local/lib/ventoy/VentoyGUI.x86_64" && -f "/usr/local/lib/ventoy/VentoyGUI.i386 && -f /usr/local/lib/ventoy/VentoyGUI.aarch64" && -f "/usr/local/lib/ventoy/VentoyGUI.mips64el" ]]; then
+if [[ -f "$USR_PATH/lib/ventoy/VentoyGUI.x86_64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.i386 && -f $USR_PATH/lib/ventoy/VentoyGUI.aarch64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.mips64el" ]]; then
     echo "Ventoy is Already Installed, so Cancelling Installation."
     exit 1
 fi
@@ -276,7 +281,7 @@ read -p "Do You Want Reinstall? <YES=y/No=n> " InstallFormat
 
 if [[ "$InstallFormat" == "y" ]]; then
     CHECK_ROOT
-    if [[ -f "/usr/local/lib/ventoy/VentoyGUI.x86_64" && -f "/usr/local/lib/ventoy/VentoyGUI.i386 && -f /usr/local/lib/ventoy/VentoyGUI.aarch64" && -f "/usr/local/lib/ventoy/VentoyGUI.mips64el" ]]; then
+    if [[ -f "$USR_PATH/lib/ventoy/VentoyGUI.x86_64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.i386 && -f $USR_PATH/lib/ventoy/VentoyGUI.aarch64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.mips64el" ]]; then
         echo "Ventoy is Not Installed, So Cancelling Reinstall." >&2
         exit 1
     fi
@@ -312,7 +317,7 @@ elif [ "${1,,}" == "upgrade" ]; then
 elif [ "${1,,}" == "reinstall" ]; then
     if [ "${2}" == "-y" ]; then
         CHECK_ROOT
-        if [[ -f "/usr/local/lib/ventoy/VentoyGUI.x86_64" && -f "/usr/local/lib/ventoy/VentoyGUI.i386 && -f /usr/local/lib/ventoy/VentoyGUI.aarch64" && -f "/usr/local/lib/ventoy/VentoyGUI.mips64el" ]]; then
+        if [[ -f "$USR_PATH/lib/ventoy/VentoyGUI.x86_64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.i386 && -f $USR_PATH/lib/ventoy/VentoyGUI.aarch64" && -f "$USR_PATH/lib/ventoy/VentoyGUI.mips64el" ]]; then
             echo "Ventoy is Not Installed, So Cancelling Reinstall." >&2
             exit 1
         fi
